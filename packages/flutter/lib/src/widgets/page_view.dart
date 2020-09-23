@@ -588,6 +588,8 @@ class PageView extends StatefulWidget {
     this.allowImplicitScrolling = false,
     this.restorationId,
     this.clipBehavior = Clip.hardEdge,
+    this.cacheExtent,
+    this.cacheExtentStyle,
   }) : assert(allowImplicitScrolling != null),
        assert(clipBehavior != null),
        controller = controller ?? _defaultPageController,
@@ -626,6 +628,8 @@ class PageView extends StatefulWidget {
     this.allowImplicitScrolling = false,
     this.restorationId,
     this.clipBehavior = Clip.hardEdge,
+    this.cacheExtent,
+    this.cacheExtentStyle,
   }) : assert(allowImplicitScrolling != null),
        assert(clipBehavior != null),
        controller = controller ?? _defaultPageController,
@@ -727,6 +731,8 @@ class PageView extends StatefulWidget {
     this.allowImplicitScrolling = false,
     this.restorationId,
     this.clipBehavior = Clip.hardEdge,
+    this.cacheExtent,
+    this.cacheExtentStyle,
   }) : assert(childrenDelegate != null),
        assert(allowImplicitScrolling != null),
        assert(clipBehavior != null),
@@ -805,6 +811,24 @@ class PageView extends StatefulWidget {
   /// Defaults to [Clip.hardEdge].
   final Clip clipBehavior;
 
+  /// {@macro flutter.rendering.viewport.cacheExtent}
+  ///
+  /// When [allowImplicitScrolling] is set to `true` this is set to
+  /// the maximum of the given value and 1.0 such that accessibility scrolling
+  /// keeps working correctly
+  /// See also:
+  ///
+  ///  * [cacheExtentStyle], which controls the units of the [cacheExtent].
+  final double cacheExtent;
+
+  /// {@macro flutter.rendering.viewport.cacheExtentStyle}
+  ///
+  /// When [allowImplicitScrolling] the [cacheExtentStyle] will always
+  /// be [CacheExtentStyle.viewport] such that accessibility scrolling keeps
+  /// working correctly
+  final CacheExtentStyle cacheExtentStyle;
+
+
   @override
   _PageViewState createState() => _PageViewState();
 }
@@ -860,11 +884,12 @@ class _PageViewState extends State<PageView> {
         restorationId: widget.restorationId,
         viewportBuilder: (BuildContext context, ViewportOffset position) {
           return Viewport(
-            // TODO(dnfield): we should provide a way to set cacheExtent
-            // independent of implicit scrolling:
-            // https://github.com/flutter/flutter/issues/45632
-            cacheExtent: widget.allowImplicitScrolling ? 1.0 : 0.0,
-            cacheExtentStyle: CacheExtentStyle.viewport,
+            cacheExtent: widget.allowImplicitScrolling
+              ? math.max(widget.cacheExtent ?? 0.0, 1.0)
+              : widget.cacheExtent ?? 0.0,
+            cacheExtentStyle: widget.allowImplicitScrolling
+              ? CacheExtentStyle.viewport
+              : widget.cacheExtentStyle ?? CacheExtentStyle.viewport,
             axisDirection: axisDirection,
             offset: position,
             clipBehavior: widget.clipBehavior,
